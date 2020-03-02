@@ -1,11 +1,17 @@
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
-from django.http import HTTP_404_NOT_FOUND
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import generics
 # Create your views here.
 
+class SnippetList(generics.ListCreateAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+"""
 class SnippetList(APIView):
     """List all snippets, or create a new snippet."""
     def get(self, request, format=None):
@@ -46,7 +52,7 @@ class SnippetDetail(APIView):
         snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-"""
+
 @api_view(['GET', 'POST'])
 def snippet_list(request, format=None):
     
