@@ -1,19 +1,33 @@
 from snippets.models import Snippet
-from snippets.serializers import SnippetSerializer
+from snippets.serializers import SnippetSerializer, UserSerializer
 from rest_framework import generics
+from django.contrib.auth.models import User
+from rest_framework import permissions
+from snippets.permissions import IsOwnerOrReadOnly
 # Create your views here.
 
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-
+    permissions_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+        
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permissions_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 """
 class SnippetList(APIView):
-    """List all snippets, or create a new snippet."""
+    List all snippets, or create a new snippet.
     def get(self, request, format=None):
         snippets = Snippet.objects.all()
         serializer = SnippetSerializer(snippets, many=True)
@@ -27,7 +41,7 @@ class SnippetList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SnippetDetail(APIView):
-    """Retrieve, update or delte a snippet instance"""
+    Retrieve, update or delte a snippet instance
     def get_object(self, pk):
         try:
             return Snippet.objects.get(pk=pk)
